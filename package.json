@@ -1,0 +1,33 @@
+{
+  "name": "rtsp-player",
+  "version": "2.0.0",
+  "description": "一个完整的RTSP播放器项目，包含前端播放器和后端转码服务",
+  "main": "server-main.js",
+  "scripts": {
+    "start": "node server-main.js",
+    "dev": "nodemon server-main.js",
+    "test:ffmpeg": "node test-ffmpeg.js",
+    "test:rtsp": "bash test-rtsp.sh",
+    "diagnose": "bash diagnose.sh",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "rtsp",
+    "streaming",
+    "player",
+    "video",
+    "webrtc",
+    "hls"
+  ],
+  "author": "RTSP Player",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.13.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
