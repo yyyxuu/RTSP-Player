@@ -468,16 +468,31 @@ class RTSPStreamer {
                     logger.info('FFmpeg命令执行', { command: cmd });
                 })
                 .on('error', (err, stdout, stderr) => {
-                    logger.error('FFmpeg错误', {
-                        streamId,
-                        rtspUrl,
-                        error: err.message,
-                        stdout: stdout?.substring(0, 1000),
-                        stderr: stderr?.substring(0, 1000)
-                    });
+                    // 检查是否是正常停止（SIGTERM信号导致）
+                    const isNormalStop = err.message.includes('received signal 15') ||
+                                       err.message.includes('Exiting normally');
 
-                    this.sendError(connectionId, `FFmpeg错误: ${err.message}`);
-                    this.cleanupStream(streamId);
+                    if (isNormalStop) {
+                        logger.info('FFmpeg正常停止', {
+                            streamId,
+                            rtspUrl,
+                            message: err.message
+                        });
+
+                        // 正常停止时不发送错误消息
+                        this.cleanupStream(streamId);
+                    } else {
+                        logger.error('FFmpeg错误', {
+                            streamId,
+                            rtspUrl,
+                            error: err.message,
+                            stdout: stdout?.substring(0, 1000),
+                            stderr: stderr?.substring(0, 1000)
+                        });
+
+                        this.sendError(connectionId, `FFmpeg错误: ${err.message}`);
+                        this.cleanupStream(streamId);
+                    }
                 })
                 .on('end', () => {
                     logger.info('RTSP流正常结束', { streamId, rtspUrl });
@@ -615,7 +630,7 @@ class RTSPStreamer {
         logger.debug('请求HLS播放列表', { streamId, exists: !!streamInfo });
 
         if (!streamInfo) {
-            logger.warn('流不存在', { streamId });
+            logger.debug('流不存在', { streamId });
             res.status(404).json({ error: '流不存在' });
             return;
         }
@@ -640,7 +655,7 @@ class RTSPStreamer {
         const streamInfo = this.activeStreams.get(streamId);
 
         if (!streamInfo) {
-            logger.warn('流不存在', { streamId });
+            logger.debug('流不存在', { streamId });
             res.status(404).json({ error: '流不存在' });
             return;
         }
@@ -653,7 +668,7 @@ class RTSPStreamer {
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.sendFile(filePath);
         } else {
-            logger.warn('分片文件不存在', { filePath, segment });
+            logger.debug('分片文件不存在', { filePath, segment });
             res.status(404).json({ error: '分片文件不存在' });
         }
     }

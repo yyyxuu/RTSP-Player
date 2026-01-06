@@ -544,8 +544,7 @@
                 console.log('流停止:', data);
                 this.updateStatus('流已停止', 'disconnected');
                 this.updateStreamStatus('已停止');
-                this.player.pause();
-                this.player.src('');
+                this.player.reset();
                 this.currentStreamId = null;
                 document.getElementById('stream-id').textContent = '-';
             }
